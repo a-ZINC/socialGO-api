@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"social-api/internal/store"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -11,6 +12,7 @@ import (
 
 type Application struct {
 	Config Config
+	Store  *store.Store
 }
 
 type Config struct {
