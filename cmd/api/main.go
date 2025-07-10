@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+	"social-api/internal/db"
 	"social-api/internal/env"
 	"social-api/internal/store"
 
@@ -12,12 +14,25 @@ func main() {
 	if err != nil {
 		panic("Error loading .env file")
 	}
-	store := store.NewStorage(nil)
-	app := &Application{
-		Config: Config{
-			Addr: ":" + env.GetString("ADDR", "3000"),
+	cfg := Config{
+		Addr: ":" + env.GetString("ADDR", "3000"),
+		Db: DbConfig{
+			Addr:            env.GetString("DB_ADDR", "postgres://postgres:password@localhost:5432/social_api?sslmode=disable"),
+			MaxOpenConns:    env.GetInt("DB_MAX_OPEN_CONNS", 25),
+			MaxIdleConns:    env.GetInt("DB_MAX_IDLE_CONNS", 25),
+			ConnMaxLifetime: env.GetString("DB_CONN_MAX_LIFETIME", "5m"),
+			ConnMaxIdleTime: env.GetString("DB_CONN_MAX_IDLE_TIME", "5m"),
 		},
-		Store: store,
+	}
+
+	sql := db.New(cfg.Db.Addr, cfg.Db.MaxOpenConns, cfg.Db.MaxIdleConns, cfg.Db.ConnMaxLifetime, cfg.Db.ConnMaxIdleTime)
+	log.Printf("Connected to database at %s", cfg.Db.Addr)
+
+	store := store.NewStorage(sql)
+
+	app := &Application{
+		Config: cfg,
+		Store:  store,
 	}
 	mux := app.mount()
 
