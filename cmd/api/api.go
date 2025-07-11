@@ -20,6 +20,8 @@ type Config struct {
 	Db    DbConfig
 }
 
+var Version string = "1.0.0"
+
 type DbConfig struct {
 	Addr    string
 	MaxOpenConns int
@@ -38,6 +40,9 @@ func (app *Application) mount() http.Handler {
 
 	mux.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthHandler)
+		r.Route("/posts", func(r chi.Router) {
+			r.Post("/", app.CreatePosthandler)
+		})
 	})
 	return mux
 }

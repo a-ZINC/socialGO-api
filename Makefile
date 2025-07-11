@@ -6,7 +6,7 @@ MIGRATION_DIR = cmd/migrate/migrations
 migration-create:
 	@echo "Creating migration file..."
 	@read -p "Enter migration name: " name; \
-	migrate create -ext sql -dir $(MIGRATION_DIR) -seq "$$name"; \
+	migrate create -ext sql -dir $(MIGRATION_DIR) "$$name"; \
 	echo "Migration file created in $(MIGRATION_DIR)"
 
 .PHONY: migrate-up
@@ -16,7 +16,7 @@ migrate-up:
 	if [ -z "$$count" ]; then \
 		migrate -path $(MIGRATION_DIR) -database $(DB_ADDR) up; \
 	else \
-		migrate -path $(MIGRATION_DIR) -database $(DB_ADDR) up $$count; \
+		migrate -path $(MIGRATION_DIR) -database $(DB_ADDR) up "$$count"; \
 	fi
 .PHONY: migrate-down
 migrate-down:
@@ -29,4 +29,10 @@ migrate-down:
 	else \
 		migrate -path $(MIGRATION_DIR) -database $(DB_ADDR) down "$$count"; \
 	fi
+.PHONY: migrate-force
+migrate-force:
+	@echo "Forcing migration to version..."
+	@read -p "Enter version to force: " version; \
+	migrate -path $(MIGRATION_DIR) -database $(DB_ADDR) force "$$version"; \
+	echo "Migration forced to version $$version"
 
