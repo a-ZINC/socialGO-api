@@ -5,7 +5,6 @@ import (
 	"social-api/internal/db"
 	"social-api/internal/env"
 	"social-api/internal/store"
-
 	"github.com/joho/godotenv"
 )
 

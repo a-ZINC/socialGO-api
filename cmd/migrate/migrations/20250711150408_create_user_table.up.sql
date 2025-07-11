@@ -1,0 +1,9 @@
+CREATE EXTENSION IF NOT EXISTS citext;
+
+CREATE TABLE "User" (
+    id BIGSERIAL PRIMARY KEY,
+    email citext NOT NULL UNIQUE,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password BYTEA NOT NULL,
+    created_at TIMESTAMP(0) WITH TIME ZONE DEFAULT NOW()
+)
