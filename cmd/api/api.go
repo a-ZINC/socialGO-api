@@ -42,6 +42,7 @@ func (app *Application) mount() http.Handler {
 		r.Get("/health", app.healthHandler)
 		r.Route("/posts", func(r chi.Router) {
 			r.Post("/", app.CreatePosthandler)
+			r.Get("/{postId}", app.GetPostByIDHandler)
 		})
 	})
 	return mux

@@ -3,11 +3,17 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"social-api/model"
+)
+
+var (
+	ErrPostNotFound = errors.New("resource not found")
 )
 
 type PostRepo interface {
 	Create(ctx context.Context, post model.Post) error
+	GetByID(ctx context.Context, id int64) (model.Post, error)
 }
 
 type UserRepo interface {

@@ -4,7 +4,11 @@ import (
 	"log"
 	"net/http"
 	"social-api/cmd/utils"
+	"social-api/internal/store"
 	"social-api/model"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type PostPayload struct {
@@ -20,7 +24,7 @@ func (app *Application) CreatePosthandler(w http.ResponseWriter, r *http.Request
 		if writeErr := utils.WriteJsonError(w, http.StatusBadRequest, "Invalid request payload"); writeErr != nil {
 			http.Error(w, writeErr.Error(), http.StatusInternalServerError)
 		}
-		return 
+		return
 	}
 	ctx := r.Context()
 	err := app.Store.Posts.Create(ctx, model.Post{
@@ -35,5 +39,27 @@ func (app *Application) CreatePosthandler(w http.ResponseWriter, r *http.Request
 		}
 		return
 	}
-	utils.WriteJson(w, http.StatusCreated, payload);
+	utils.WriteJson(w, http.StatusCreated, payload)
+}
+
+func (app *Application) GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
+	idParams := chi.URLParam(r, "postId")
+	id, err := strconv.ParseInt(idParams, 10, 64)
+	if err != nil {
+		utils.WriteJsonError(w, http.StatusBadRequest, "Invalid post ID")
+		return
+	}
+	ctx := r.Context()
+	post, err := app.Store.Posts.GetByID(ctx, id)
+	if err != nil {
+		switch err {
+		case store.ErrPostNotFound:
+			utils.WriteJsonError(w, http.StatusNotFound, "Post not found")
+		default:
+			log.Println("Error retrieving post:", err)
+			utils.WriteJsonError(w, http.StatusInternalServerError, "Failed to retrieve post")
+		}
+		return
+	}
+	utils.WriteJson(w, http.StatusOK, post)
 }
