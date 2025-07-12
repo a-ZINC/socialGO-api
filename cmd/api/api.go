@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"social-api/cmd/utils"
 	"social-api/internal/store"
 	"time"
 
@@ -13,19 +14,20 @@ import (
 type Application struct {
 	Config Config
 	Store  *store.Store
+	Err    *utils.ErrorHandler
 }
 
 type Config struct {
 	Addr string
-	Db    DbConfig
+	Db   DbConfig
 }
 
 var Version string = "1.0.0"
 
 type DbConfig struct {
-	Addr    string
-	MaxOpenConns int
-	MaxIdleConns int
+	Addr            string
+	MaxOpenConns    int
+	MaxIdleConns    int
 	ConnMaxLifetime string
 	ConnMaxIdleTime string
 }

@@ -3,11 +3,16 @@ package utils
 import (
 	"encoding/json"
 	"net/http"
+	"github.com/go-playground/validator/v10"
 )
 
 type Envelope struct {
 	Error string `json:"error"`
 }
+
+var (
+	Validator = validator.New(validator.WithRequiredStructEnabled())
+)
 
 func WriteJson(w http.ResponseWriter, status int, data any) error {
 	w.Header().Set("Content-Type", "application/json")

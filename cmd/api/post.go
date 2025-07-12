@@ -12,8 +12,8 @@ import (
 )
 
 type PostPayload struct {
-	Title   string   `json:"title"`
-	Content string   `json:"content"`
+	Title   string   `json:"title" validate:"required,max=100"`
+	Content string   `json:"content" validate:"required,max=1000"`
 	Tags    []string `json:"tags"`
 }
 
@@ -21,11 +21,15 @@ func (app *Application) CreatePosthandler(w http.ResponseWriter, r *http.Request
 	payload := &PostPayload{}
 	if err := utils.ReadJson(w, r, payload); err != nil {
 		log.Println("Creating post:", payload)
-		if writeErr := utils.WriteJsonError(w, http.StatusBadRequest, "Invalid request payload"); writeErr != nil {
-			http.Error(w, writeErr.Error(), http.StatusInternalServerError)
-		}
+		app.Err.BadRequestError(w, r, err)
 		return
 	}
+
+	if err := utils.Validator.Struct(payload); err != nil {
+		app.Err.BadRequestError(w, r, err)
+		return
+	}
+
 	ctx := r.Context()
 	err := app.Store.Posts.Create(ctx, model.Post{
 		Title:   payload.Title,
@@ -34,9 +38,7 @@ func (app *Application) CreatePosthandler(w http.ResponseWriter, r *http.Request
 		UserID:  1,
 	})
 	if err != nil {
-		if writeErr := utils.WriteJsonError(w, http.StatusInternalServerError, "Failed to create post"); writeErr != nil {
-			http.Error(w, writeErr.Error(), http.StatusInternalServerError)
-		}
+		app.Err.InternalServerError(w, r, err)
 		return
 	}
 	utils.WriteJson(w, http.StatusCreated, payload)
@@ -46,7 +48,7 @@ func (app *Application) GetPostByIDHandler(w http.ResponseWriter, r *http.Reques
 	idParams := chi.URLParam(r, "postId")
 	id, err := strconv.ParseInt(idParams, 10, 64)
 	if err != nil {
-		utils.WriteJsonError(w, http.StatusBadRequest, "Invalid post ID")
+		app.Err.BadRequestError(w, r, err)
 		return
 	}
 	ctx := r.Context()
@@ -54,10 +56,10 @@ func (app *Application) GetPostByIDHandler(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		switch err {
 		case store.ErrPostNotFound:
-			utils.WriteJsonError(w, http.StatusNotFound, "Post not found")
+			app.Err.NotFoundError(w, r, err)
 		default:
 			log.Println("Error retrieving post:", err)
-			utils.WriteJsonError(w, http.StatusInternalServerError, "Failed to retrieve post")
+			app.Err.InternalServerError(w, r, err)
 		}
 		return
 	}
