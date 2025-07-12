@@ -63,5 +63,7 @@ func (app *Application) GetPostByIDHandler(w http.ResponseWriter, r *http.Reques
 		}
 		return
 	}
+	comments, _ := app.Store.Comments.GetByPostId(ctx, id)
+	post.Comments = comments
 	utils.WriteJson(w, http.StatusOK, post)
 }

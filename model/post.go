@@ -8,5 +8,5 @@ type Post struct {
 	UserID    int64    `json:"user_id"`
 	CreatedAt string   `json:"created_at"`
 	UpdatedAt string   `json:"updated_at"`
-	Comments  []Comment `json:"comments,omitempty"`
+	Comments  []Comment `json:"comments"`
 }

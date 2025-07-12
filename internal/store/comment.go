@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"log"
 	"social-api/model"
 )
 
@@ -13,7 +14,7 @@ type CommentStore struct {
 func (s *CommentStore) Create(ctx context.Context, comment model.Comment) error {
 	query := `
 		INSERT INTO "Comment" ( content, post_id, user_id )
-		VALUES ($1, $2, $3) RETURNING id, created_at, content
+		VALUES ($1, $2, $3) RETURNING id, created_at
 	`
 	err := s.db.QueryRowContext(ctx, query, comment.Content, comment.PostID, comment.UserID).Scan(&comment.ID, &comment.CreatedAt)
 
