@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"log"
 	"social-api/model"
 
 	"github.com/lib/pq"
@@ -53,6 +54,28 @@ func (s *PostStore) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	rowsAffected, err := post.RowsAffected()
+    if err != nil {
+        return err
+    }
+    
+    if rowsAffected == 0 {
+        return ErrPostNotFound
+    }
+	return nil
+}
+
+func (s *PostStore) Update(ctx context.Context, post model.Post, id int64) error {
+	query := `
+		UPDATE "Post"
+		SET title=$1, content=$2
+		WHERE id = $3
+	`
+
+	p, err := s.db.ExecContext(ctx, query, post.Title, post.Content, id)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := p.RowsAffected()
     if err != nil {
         return err
     }

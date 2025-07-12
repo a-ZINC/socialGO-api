@@ -15,6 +15,7 @@ type PostRepo interface {
 	Create(ctx context.Context, post model.Post) error
 	GetByID(ctx context.Context, id int64) (model.Post, error)
 	Delete(ctx context.Context, id int64) error
+	Update(ctx context.Context, post model.Post, id int64) error
 }
 
 type UserRepo interface {
