@@ -20,9 +20,15 @@ type UserRepo interface {
 	Create(ctx context.Context, user model.User) error
 }
 
+type CommentRepo interface {
+	Create(ctx context.Context, comment model.Comment) error
+	GetByPostId(ctx context.Context, postId int64) ([]model.Comment, error)
+}
+
 type Store struct {
-	Posts PostRepo
-	Users UserRepo
+	Posts    PostRepo
+	Users    UserRepo
+	Comments CommentRepo
 }
 
 func NewStorage(db *sql.DB) *Store {
@@ -31,6 +37,9 @@ func NewStorage(db *sql.DB) *Store {
 			db: db,
 		},
 		Users: &UserStore{
+			db: db,
+		},
+		Comments: &CommentStore{
 			db: db,
 		},
 	}
