@@ -6,9 +6,6 @@ import (
 	"social-api/cmd/utils"
 	"social-api/internal/store"
 	"social-api/model"
-	"strconv"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type PostPayload struct {
@@ -45,12 +42,7 @@ func (app *Application) CreatePosthandler(w http.ResponseWriter, r *http.Request
 }
 
 func (app *Application) GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
-	idParams := chi.URLParam(r, "postId")
-	id, err := strconv.ParseInt(idParams, 10, 64)
-	if err != nil {
-		app.Err.BadRequestError(w, r, err)
-		return
-	}
+	id := app.Middleware.GetPostIdFromContext(r)
 	ctx := r.Context()
 	post, err := app.Store.Posts.GetByID(ctx, id)
 	if err != nil {
@@ -66,4 +58,23 @@ func (app *Application) GetPostByIDHandler(w http.ResponseWriter, r *http.Reques
 	comments, _ := app.Store.Comments.GetByPostId(ctx, id)
 	post.Comments = comments
 	utils.WriteJson(w, http.StatusOK, post)
+}
+
+func (app *Application) DeletePostHandler(w http.ResponseWriter, r *http.Request) {
+	id := app.Middleware.GetPostIdFromContext(r)
+
+	ctx := r.Context()
+	err := app.Store.Posts.Delete(ctx, id)
+	if err != nil {
+		switch err {
+		case store.ErrPostNotFound:
+			app.Err.NotFoundError(w, r, err)
+		default:
+			log.Println("Error retrieving post:", err)
+			app.Err.InternalServerError(w, r, err)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

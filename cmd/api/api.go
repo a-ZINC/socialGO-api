@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"social-api/cmd/middlewares"
 	"social-api/cmd/utils"
 	"social-api/internal/store"
 	"time"
@@ -12,9 +13,10 @@ import (
 )
 
 type Application struct {
-	Config Config
-	Store  *store.Store
-	Err    *utils.ErrorHandler
+	Config     Config
+	Store      *store.Store
+	Err        *utils.ErrorHandler
+	Middleware *middlewares.Middleware
 }
 
 type Config struct {
@@ -44,7 +46,11 @@ func (app *Application) mount() http.Handler {
 		r.Get("/health", app.healthHandler)
 		r.Route("/posts", func(r chi.Router) {
 			r.Post("/", app.CreatePosthandler)
-			r.Get("/{postId}", app.GetPostByIDHandler)
+			r.Route("/{postId}", func(r chi.Router) {
+				r.Use(app.Middleware.PostContext)
+				r.Get("/", app.GetPostByIDHandler)
+				r.Delete("/", app.DeletePostHandler)
+			})
 		})
 		r.Route("/comments", func(r chi.Router) {
 			r.Route("/post", func(r chi.Router) {

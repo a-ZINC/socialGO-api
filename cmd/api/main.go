@@ -2,9 +2,12 @@ package main
 
 import (
 	"log"
+	"social-api/cmd/middlewares"
+	"social-api/cmd/utils"
 	"social-api/internal/db"
 	"social-api/internal/env"
 	"social-api/internal/store"
+
 	"github.com/joho/godotenv"
 )
 
@@ -23,6 +26,10 @@ func main() {
 			ConnMaxIdleTime: env.GetString("DB_CONN_MAX_IDLE_TIME", "5m"),
 		},
 	}
+	errorConfig := &utils.ErrorHandler{}
+	middlewareCfg := &middlewares.Middleware{
+		Err: errorConfig,
+	}
 
 	sql := db.New(cfg.Db.Addr, cfg.Db.MaxOpenConns, cfg.Db.MaxIdleConns, cfg.Db.ConnMaxLifetime, cfg.Db.ConnMaxIdleTime)
 	log.Printf("Connected to database at %s", cfg.Db.Addr)
@@ -32,6 +39,8 @@ func main() {
 	app := &Application{
 		Config: cfg,
 		Store:  store,
+		Err: errorConfig,
+		Middleware: middlewareCfg,
 	}
 	mux := app.mount()
 
