@@ -35,4 +35,8 @@ migrate-force:
 	@read -p "Enter version to force: " version; \
 	migrate -path $(MIGRATION_DIR) -database $(DB_ADDR) force "$$version"; \
 	echo "Migration forced to version $$version"
+.PHONY: seed
+seed:
+	@echo "Seeding database..."
+	@go run ./cmd/migrate/seed/main.go
 

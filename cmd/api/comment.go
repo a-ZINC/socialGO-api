@@ -32,7 +32,7 @@ func (app *Application) CreateCommentHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	ctx := r.Context()
-	err = app.Store.Comments.Create(ctx, model.Comment{
+	err = app.Store.Comments.Create(ctx, &model.Comment{
 		UserID: 1,
 		PostID: postId,
 		Content: payload.Content,
@@ -42,5 +42,5 @@ func (app *Application) CreateCommentHandler(w http.ResponseWriter, r *http.Requ
 		app.Err.InternalServerError(w, r, err)
 		return
 	}
-	utils.WriteJson(w, http.StatusCreated, payload)
+	utils.JsonResponse(w, http.StatusCreated, payload)
 }

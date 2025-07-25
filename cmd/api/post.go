@@ -32,7 +32,7 @@ func (app *Application) CreatePosthandler(w http.ResponseWriter, r *http.Request
 	}
 
 	ctx := r.Context()
-	err := app.Store.Posts.Create(ctx, model.Post{
+	err := app.Store.Posts.Create(ctx, &model.Post{
 		Title:   payload.Title,
 		Content: payload.Content,
 		Tags:    payload.Tags,
@@ -42,7 +42,7 @@ func (app *Application) CreatePosthandler(w http.ResponseWriter, r *http.Request
 		app.Err.InternalServerError(w, r, err)
 		return
 	}
-	utils.WriteJson(w, http.StatusCreated, payload)
+	utils.JsonResponse(w, http.StatusCreated, payload)
 }
 
 func (app *Application) GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {

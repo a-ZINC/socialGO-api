@@ -9,6 +9,10 @@ import (
 type Envelope struct {
 	Error string `json:"error"`
 }
+type OkEnvelope struct {
+	Data interface{} `json:"data"`
+	Status int `json:"status"`
+}
 
 var (
 	Validator = validator.New(validator.WithRequiredStructEnabled())
@@ -36,4 +40,12 @@ func ReadJson(w http.ResponseWriter, r *http.Request, data any) error {
 func WriteJsonError(w http.ResponseWriter, status int, message string) error {
 	msg := Envelope{Error: message}
 	return WriteJson(w, status, msg)
+}
+
+func JsonResponse(w http.ResponseWriter, status int, data any) error {
+	payload := &OkEnvelope{
+		Data: data,
+		Status: status,
+	}
+	return WriteJson(w, status, payload)
 }
