@@ -11,7 +11,6 @@ require (
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/lib/pq v1.10.9
 	github.com/swaggo/http-swagger v1.3.4
-	github.com/swaggo/http-swagger/example/go-chi v0.0.0-20250521103423-c7b1da04c24a
 	github.com/swaggo/swag v1.16.5
 )
 

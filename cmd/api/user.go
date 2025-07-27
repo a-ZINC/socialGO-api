@@ -21,11 +21,18 @@ type UserContextKey string
 var key UserContextKey = "user"
 
 // GetUserByIDHandler retrieves a user by their ID from the context
-//
-//	@Summary		Get user by ID
-//	@Description	Get user details by user ID
-//	@Tags			Users
-//	@Accept			json
+// @Summary Get user by ID
+// @Description Get user details by user ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param userId path int true "User ID"
+// @Success 200 {object} model.User
+// @Failure 400 {object} utils.ErrorResponse
+// @Failure 404 {object} utils.ErrorResponse
+// @Failure 500 {object} utils.ErrorResponse
+// @Security ApiKeyAuth
+// @Router /v1/user/{userId} [get]
 func (app *Application) GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := app.GetUserFromContext(r)
 	if err != nil {
@@ -35,6 +42,20 @@ func (app *Application) GetUserByIDHandler(w http.ResponseWriter, r *http.Reques
 	utils.WriteJson(w, http.StatusOK, user)
 }
 
+// FollowUserHandler follows a user
+// @Summary Follow a user
+// @Description Follow a user by their ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param userId path int true "User ID"
+// @Param body body FollowUser true "User to follow"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} utils.ErrorResponse
+// @Failure 404 {object} utils.ErrorResponse
+// @Failure 500 {object} utils.ErrorResponse
+// @Security ApiKeyAuth
+// @Router /v1/user/{userId}/follow [put]
 func (app *Application) FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	followerUser, err := app.GetUserFromContext(r)
 	if err != nil {
