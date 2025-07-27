@@ -21,4 +21,3 @@ func (e *ErrorHandler) NotFoundError(w http.ResponseWriter, r *http.Request, err
 	log.Printf("Not Found method: %s path: %s error: %v", r.Method, r.URL.Path, err)
 	WriteJsonError(w, http.StatusNotFound, "Not Found")
 }
-

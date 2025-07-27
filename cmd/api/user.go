@@ -20,6 +20,12 @@ type UserContextKey string
 
 var key UserContextKey = "user"
 
+// GetUserByIDHandler retrieves a user by their ID from the context
+//
+//	@Summary		Get user by ID
+//	@Description	Get user details by user ID
+//	@Tags			Users
+//	@Accept			json
 func (app *Application) GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := app.GetUserFromContext(r)
 	if err != nil {
@@ -42,7 +48,7 @@ func (app *Application) FollowUserHandler(w http.ResponseWriter, r *http.Request
 	}
 	followerUserId := followerUser.ID
 
-	err = app.Store.Follower.Follow(r.Context(), followerUserId, followUser.UserId)
+	err = app.Store.Follower.Follow(r.Context(), followUser.UserId, followerUserId)
 	if err != nil {
 		app.Err.InternalServerError(w, r, err)
 		return

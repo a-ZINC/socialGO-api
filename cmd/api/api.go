@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"social-api/cmd/middlewares"
 	"social-api/cmd/utils"
+	"social-api/docs"
 	"social-api/internal/store"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Application struct {
@@ -20,8 +22,9 @@ type Application struct {
 }
 
 type Config struct {
-	Addr string
-	Db   DbConfig
+	Addr   string
+	Db     DbConfig
+	ApiUrl string
 }
 
 var Version string = "1.0.0"
@@ -44,6 +47,8 @@ func (app *Application) mount() http.Handler {
 
 	mux.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthHandler)
+		docsUrl := "/v1/swagger/doc.json"
+		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsUrl)))
 		r.Route("/posts", func(r chi.Router) {
 			r.Post("/", app.CreatePosthandler)
 			r.Route("/{postId}", func(r chi.Router) {
@@ -65,12 +70,17 @@ func (app *Application) mount() http.Handler {
 				r.Put("/follow", app.FollowUserHandler)
 				r.Put("/unfollow", app.UnfollowUserHandler)
 			})
+			r.Get("/feed", app.GetUserFeedHandler)
 		})
 	})
 	return mux
 }
 
 func (app *Application) run(mux http.Handler) error {
+
+	docs.SwaggerInfo.BasePath = "/v1"
+	docs.SwaggerInfo.Host = app.Config.ApiUrl
+	docs.SwaggerInfo.Version = Version
 
 	server := &http.Server{
 		Addr:         app.Config.Addr,

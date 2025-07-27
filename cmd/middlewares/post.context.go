@@ -7,12 +7,14 @@ import (
 
 	"github.com/go-chi/chi/v5"
 )
+
 type PostIdType string
+
 const postCtx PostIdType = "postId"
 
 func (m *Middleware) PostContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		postIdParam := chi.URLParam(r, "postId") 
+		postIdParam := chi.URLParam(r, "postId")
 		postId, err := strconv.ParseInt(postIdParam, 10, 64)
 		if err != nil {
 			m.Err.InternalServerError(w, r, err)

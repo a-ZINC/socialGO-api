@@ -10,8 +10,9 @@ import (
 )
 
 type CommentPayload struct {
-	Content string  `json:"content" validate:"required,max=100"`
+	Content string `json:"content" validate:"required,max=100"`
 }
+
 func (app *Application) CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	postIdParams := chi.URLParam(r, "postId")
 	postId, err := strconv.ParseInt(postIdParams, 10, 64)
@@ -33,8 +34,8 @@ func (app *Application) CreateCommentHandler(w http.ResponseWriter, r *http.Requ
 
 	ctx := r.Context()
 	err = app.Store.Comments.Create(ctx, &model.Comment{
-		UserID: 1,
-		PostID: postId,
+		UserID:  1,
+		PostID:  postId,
 		Content: payload.Content,
 	})
 

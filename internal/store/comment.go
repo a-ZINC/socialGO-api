@@ -49,4 +49,3 @@ func (s *CommentStore) GetByPostId(ctx context.Context, postId int64) ([]model.C
 	}
 	return comments, nil
 }
-

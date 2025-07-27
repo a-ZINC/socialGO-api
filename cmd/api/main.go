@@ -4,6 +4,7 @@ import (
 	"log"
 	"social-api/cmd/middlewares"
 	"social-api/cmd/utils"
+	_ "social-api/docs"
 	"social-api/internal/db"
 	"social-api/internal/env"
 	"social-api/internal/store"
@@ -11,6 +12,22 @@ import (
 	"github.com/joho/godotenv"
 )
 
+//	@title			Social Media API
+//	@description	This is a simple social media API built with Go.
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	API Support
+//	@contact.url	http://www.swagger.io/support
+//	@contact.email	support@swagger.io
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+//	@schemes	http
+
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -25,6 +42,7 @@ func main() {
 			ConnMaxLifetime: env.GetString("DB_CONN_MAX_LIFETIME", "5m"),
 			ConnMaxIdleTime: env.GetString("DB_CONN_MAX_IDLE_TIME", "5m"),
 		},
+		ApiUrl: env.GetString("API_URL", "localhost:3000"),
 	}
 	errorConfig := &utils.ErrorHandler{}
 	middlewareCfg := &middlewares.Middleware{
@@ -37,9 +55,9 @@ func main() {
 	store := store.NewStorage(sql)
 
 	app := &Application{
-		Config: cfg,
-		Store:  store,
-		Err: errorConfig,
+		Config:     cfg,
+		Store:      store,
+		Err:        errorConfig,
 		Middleware: middlewareCfg,
 	}
 	mux := app.mount()

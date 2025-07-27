@@ -6,6 +6,7 @@ import (
 	"social-api/cmd/utils"
 	"social-api/internal/store"
 	"social-api/model"
+	"strconv"
 )
 
 type PostPayload struct {
@@ -16,6 +17,16 @@ type PostPayload struct {
 type UpdatePayload struct {
 	Title   *string `json:"title" validate:"omitempty,max=100"`
 	Content *string `json:"content" validate:"omitempty,max=1000"`
+}
+type PostWithMetadata struct {
+	Posts  []*model.PostWithMetadata `json:"posts"`
+	Limit  int                       `json:"limit"`
+	Offset int                       `json:"offset"`
+	Order  string                    `json:"order"`
+	Search string                    `json:"search"`
+	Since  *string                   `json:"since"`
+	Tags   []string                  `json:"tags"`
+	Count  int64                     `json:"count"`
 }
 
 func (app *Application) CreatePosthandler(w http.ResponseWriter, r *http.Request) {
@@ -122,6 +133,73 @@ func (app *Application) UpdatePostHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := utils.WriteJson(w, http.StatusOK, payload); err != nil {
+		app.Err.InternalServerError(w, r, err)
+		return
+	}
+}
+
+func (app *Application) GetUserFeedHandler(w http.ResponseWriter, r *http.Request) {
+	pagination := &store.Pagination{
+		Limit:  10,
+		Offset: 0,
+		Order:  "desc",
+		Search: "",
+		Since:  nil,
+		Tags:   []string{},
+	}
+	pagination, err := pagination.GetPaginated(r)
+	if err != nil {
+		app.Err.BadRequestError(w, r, err)
+		return
+	}
+	log.Println("Pagination:", pagination)
+
+	if err := utils.Validator.Struct(pagination); err != nil {
+		app.Err.BadRequestError(w, r, err)
+		return
+	}
+	log.Println("Pagination after validation:", pagination)
+
+	ctx := r.Context()
+	userId, err := strconv.ParseInt("10", 10, 64)
+	if err != nil {
+		app.Err.BadRequestError(w, r, err)
+		return
+	}
+	cnt, err := app.Store.Posts.GetUserFeedCount(ctx, userId, pagination)
+	if err != nil {
+		switch err {
+		case store.ErrPostNotFound:
+			app.Err.NotFoundError(w, r, err)
+		default:
+			app.Err.InternalServerError(w, r, err)
+		}
+		return
+	}
+
+	posts, err := app.Store.Posts.GetUserFeed(ctx, userId, pagination)
+	if err != nil {
+		switch err {
+		case store.ErrPostNotFound:
+			app.Err.NotFoundError(w, r, err)
+		default:
+			log.Println("Error retrieving post:", err)
+			app.Err.InternalServerError(w, r, err)
+		}
+		return
+	}
+	postWithMetadata := PostWithMetadata{
+		Posts:  posts,
+		Limit:  pagination.Limit,
+		Offset: pagination.Offset,
+		Order:  pagination.Order,
+		Search: pagination.Search,
+		Since:  pagination.Since,
+		Tags:   pagination.Tags,
+		Count:  cnt,
+	}
+
+	if err := utils.WriteJson(w, http.StatusOK, postWithMetadata); err != nil {
 		app.Err.InternalServerError(w, r, err)
 		return
 	}
