@@ -29,6 +29,20 @@ type PostWithMetadata struct {
 	Count  int64                     `json:"count"`
 }
 
+
+// CreatePosthandler creates a new post
+// @Summary Create a new post
+// @Description Create a new post with title, content, and tags
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param body body PostPayload true "Post data"
+// @Success 201 {object} PostPayload
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Security ApiKeyAuth
+// @Router /v1/posts [post]
 func (app *Application) CreatePosthandler(w http.ResponseWriter, r *http.Request) {
 	payload := &PostPayload{}
 	if err := utils.ReadJson(w, r, payload); err != nil {
@@ -56,6 +70,19 @@ func (app *Application) CreatePosthandler(w http.ResponseWriter, r *http.Request
 	utils.JsonResponse(w, http.StatusCreated, payload)
 }
 
+// GetPostByIDHandler retrieves a post by its ID
+// @Summary Get post by ID
+// @Description Get post details by post ID
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param postId path int true "Post ID"
+// @Success 200 {object} model.PostWithMetadata
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Security ApiKeyAuth
+// @Router /v1/posts/{postId} [get]
 func (app *Application) GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
 	id := app.Middleware.GetPostIdFromContext(r)
 	ctx := r.Context()
@@ -94,6 +121,21 @@ func (app *Application) DeletePostHandler(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusNoContent)
 }
 
+
+// UpdatePostHandler updates an existing post
+// @Summary Update an existing post
+// @Description Update a post by its ID with new title and/or content
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param postId path int true "Post ID"
+// @Param body body UpdatePayload true "Post data"
+// @Success 200 {object} UpdatePayload
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Security ApiKeyAuth
+// @Router /v1/posts/{postId} [patch]
 func (app *Application) UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
 	id := app.Middleware.GetPostIdFromContext(r)
 	post, err := app.Store.Posts.GetByID(r.Context(), id)
@@ -138,6 +180,21 @@ func (app *Application) UpdatePostHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+
+// GetUserFeedHandler retrieves the user's feed
+// @Summary Get user feed
+// @Description Get the feed of posts for a user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param pagination query store.Pagination true "Pagination parameters"
+// @Param userId path int true "User ID"
+// @Success 200 {object} PostWithMetadata
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Security ApiKeyAuth
+// @Router /v1/user/feed [get]
 func (app *Application) GetUserFeedHandler(w http.ResponseWriter, r *http.Request) {
 	pagination := &store.Pagination{
 		Limit:  10,

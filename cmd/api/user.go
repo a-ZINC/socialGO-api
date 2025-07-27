@@ -28,9 +28,9 @@ var key UserContextKey = "user"
 // @Produce json
 // @Param userId path int true "User ID"
 // @Success 200 {object} model.User
-// @Failure 400 {object} utils.ErrorResponse
-// @Failure 404 {object} utils.ErrorResponse
-// @Failure 500 {object} utils.ErrorResponse
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
 // @Security ApiKeyAuth
 // @Router /v1/user/{userId} [get]
 func (app *Application) GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,9 +51,9 @@ func (app *Application) GetUserByIDHandler(w http.ResponseWriter, r *http.Reques
 // @Param userId path int true "User ID"
 // @Param body body FollowUser true "User to follow"
 // @Success 200 {object} map[string]string
-// @Failure 400 {object} utils.ErrorResponse
-// @Failure 404 {object} utils.ErrorResponse
-// @Failure 500 {object} utils.ErrorResponse
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
 // @Security ApiKeyAuth
 // @Router /v1/user/{userId}/follow [put]
 func (app *Application) FollowUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -78,6 +78,20 @@ func (app *Application) FollowUserHandler(w http.ResponseWriter, r *http.Request
 	utils.WriteJson(w, http.StatusOK, map[string]string{"message": "Followed successfully"})
 }
 
+// UnfollowUserHandler unfollows a user
+// @Summary Unfollow a user
+// @Description Unfollow a user by their ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param userId path int true "User ID"
+// @Param body body FollowUser true "User to unfollow"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Security ApiKeyAuth
+// @Router /v1/user/{userId}/unfollow [put]
 func (app *Application) UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	unfollowerUser, err := app.GetUserFromContext(r)
 	if err != nil {

@@ -42,6 +42,6 @@ seed:
 .PHONY: gen-docs
 gen-docs:
 	@echo "Generating API documentation..."
-	@swag init -g ./cmd/api/main.go -d ./,./cmd/api,./internal && swag fmt
+	@swag init -g ./cmd/api/main.go -d ./ --parseDependency --parseInternal
 	@echo "API documentation generated at ./cmd/api/swagger/doc.json"
 
