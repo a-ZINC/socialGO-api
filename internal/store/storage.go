@@ -22,6 +22,7 @@ type PostRepo interface {
 
 type UserRepo interface {
 	Create(ctx context.Context, user *model.User) error
+	GetByID(ctx context.Context, id int64) (model.User, error)
 }
 
 type CommentRepo interface {
@@ -29,10 +30,16 @@ type CommentRepo interface {
 	GetByPostId(ctx context.Context, postId int64) ([]model.Comment, error)
 }
 
+type FollowerRepo interface {
+	Follow(ctx context.Context, followerId, followedId int64) error
+	Unfollow(ctx context.Context, followerId, followedId int64) error
+}
+
 type Store struct {
 	Posts    PostRepo
 	Users    UserRepo
 	Comments CommentRepo
+	Follower FollowerRepo
 }
 
 func NewStorage(db *sql.DB) *Store {
@@ -44,6 +51,9 @@ func NewStorage(db *sql.DB) *Store {
 			db: db,
 		},
 		Comments: &CommentStore{
+			db: db,
+		},
+		Follower: &FollowerStore{
 			db: db,
 		},
 	}

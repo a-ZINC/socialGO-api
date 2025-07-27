@@ -58,6 +58,14 @@ func (app *Application) mount() http.Handler {
 				r.Post("/{postId}", app.CreateCommentHandler)
 			})
 		})
+		r.Route("/user", func(r chi.Router) {
+			r.Route("/{userId}", func(r chi.Router) {
+				r.Use(app.CreateUserContextMiddleware)
+				r.Get("/", app.GetUserByIDHandler)
+				r.Put("/follow", app.FollowUserHandler)
+				r.Put("/unfollow", app.UnfollowUserHandler)
+			})
+		})
 	})
 	return mux
 }
