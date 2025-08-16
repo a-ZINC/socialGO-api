@@ -26,6 +26,11 @@ type Config struct {
 	Addr   string
 	Db     DbConfig
 	ApiUrl string
+	Email  ConfigEmail
+}
+
+type ConfigEmail struct {
+	ExpiryTime time.Duration
 }
 
 var Version string = "1.0.0"

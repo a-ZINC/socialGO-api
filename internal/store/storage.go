@@ -24,8 +24,9 @@ type PostRepo interface {
 }
 
 type UserRepo interface {
-	Create(ctx context.Context, user *model.User) error
+	Create(ctx context.Context, tx *sql.Tx, user *model.User) error
 	GetByID(ctx context.Context, id int64) (model.User, error)
+	CreateAndInvitation(ctx context.Context, user *model.User, token string, expiryTime time.Duration) error
 }
 
 type CommentRepo interface {
@@ -64,4 +65,21 @@ func NewStorage(db *sql.DB) *Store {
 			db: db,
 		},
 	}
+}
+
+func withTx(db *sql.DB, ctx context.Context, fn func(tx *sql.Tx) error) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := recover(); err != nil {
+			tx.Rollback()
+		}
+	}()
+	if err := fn(tx); err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit()
 }

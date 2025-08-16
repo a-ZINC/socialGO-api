@@ -7,6 +7,7 @@ import (
 	"social-api/internal/db"
 	"social-api/internal/env"
 	"social-api/internal/store"
+	"time"
 
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
@@ -43,6 +44,9 @@ func main() {
 			ConnMaxIdleTime: env.GetString("DB_CONN_MAX_IDLE_TIME", "5m"),
 		},
 		ApiUrl: env.GetString("API_URL", "localhost:3000"),
+		Email: ConfigEmail{
+			ExpiryTime: env.GetDuration("EMAIL_EXPIRY_TIME", 10*time.Minute),
+		},
 	}
 	errorConfig := &utils.ErrorHandler{}
 	middlewareCfg := &middlewares.Middleware{

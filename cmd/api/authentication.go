@@ -1,9 +1,14 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"net/http"
 	"social-api/cmd/utils"
+	"social-api/internal/store"
 	"social-api/model"
+
+	"github.com/google/uuid"
 )
 
 type AuthenticationPayload struct {
@@ -14,6 +19,7 @@ type AuthenticationPayload struct {
 
 func (app *Application) RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &AuthenticationPayload{}
+	ctx := r.Context()
 	if err := utils.ReadJson(w, r, payload); err != nil {
 		app.Logger.Errorf("Failed to read JSON", "error", err)
 		app.Err.BadRequestError(w, r, err)
@@ -35,8 +41,24 @@ func (app *Application) RegisterUserHandler(w http.ResponseWriter, r *http.Reque
 		app.Err.BadRequestError(w, r, err)
 		return
 	}
-
-	
+	plainToken := uuid.New().String()
+	hash := sha256.Sum256([]byte(plainToken))
+	hashedToken := hex.EncodeToString(hash[:])
+	err := app.Store.Users.CreateAndInvitation(ctx, user, hashedToken, app.Config.Email.ExpiryTime)
+	if err != nil {
+		switch err {
+		case store.ErrEmailTaken:
+			app.Logger.Errorf("Email is already taken", "email", payload.Email)
+			app.Err.BadRequestError(w, r, err)
+		case store.ErrNameTaken:
+			app.Logger.Errorf("Name is already taken", "name", payload.Name)
+			app.Err.BadRequestError(w, r, err)
+		default:
+			app.Logger.Errorf("Failed to register user", "error", err)
+			app.Err.InternalServerError(w, r, err)
+		}
+		return
+	}
 
 	app.Logger.Infof("Registering user", "email", payload.Email)
 }

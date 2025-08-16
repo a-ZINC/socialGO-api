@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"math/rand"
 	"social-api/internal/store"
@@ -63,7 +64,7 @@ func Seed(store *store.Store) error {
 	// Seed users
 	users := generateUser(100)
 	for i := range users {
-		if err := store.Users.Create(context.Background(), &users[i]); err != nil {
+		if err := store.Users.Create(context.Background(), &sql.Tx{}, &users[i]); err != nil {
 			return err
 		}
 	}
