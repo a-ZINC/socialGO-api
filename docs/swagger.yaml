@@ -1,4 +1,20 @@
 definitions:
+  cmd_api.AuthenticationPayload:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      password:
+        maxLength: 100
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
   cmd_api.CommentPayload:
     properties:
       content:
@@ -125,6 +141,31 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Social Media API
 paths:
+  /authentication/user:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user with the provided email and password
+      parameters:
+      - description: User registration payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/cmd_api.AuthenticationPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.User'
+        "400":
+          description: Bad Request
+          schema: {}
+      summary: Register a new user
+      tags:
+      - auth
   /v1/health:
     get:
       consumes:

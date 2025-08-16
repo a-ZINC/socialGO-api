@@ -1,2 +1,2 @@
-ALTER TABLE users 
+ALTER TABLE "User"
 DROP COLUMN is_active;

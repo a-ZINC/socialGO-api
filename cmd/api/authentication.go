@@ -10,13 +10,21 @@ import (
 
 	"github.com/google/uuid"
 )
-
 type AuthenticationPayload struct {
 	Name     string `json:"name" validate:"required,max=100"`
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8,max=100"`
 }
 
+// @Summary Register a new user
+// @Description Registers a new user with the provided email and password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param input body AuthenticationPayload true "User registration payload"
+// @Success 201 {object} model.User
+// @Failure 400 {object} error
+// @Router /authentication/user [post]
 func (app *Application) RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	payload := &AuthenticationPayload{}
 	ctx := r.Context()
@@ -41,9 +49,11 @@ func (app *Application) RegisterUserHandler(w http.ResponseWriter, r *http.Reque
 		app.Err.BadRequestError(w, r, err)
 		return
 	}
+
 	plainToken := uuid.New().String()
 	hash := sha256.Sum256([]byte(plainToken))
 	hashedToken := hex.EncodeToString(hash[:])
+
 	err := app.Store.Users.CreateAndInvitation(ctx, user, hashedToken, app.Config.Email.ExpiryTime)
 	if err != nil {
 		switch err {
