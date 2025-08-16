@@ -35,10 +35,13 @@ var key UserContextKey = "user"
 // @Router /v1/user/{userId} [get]
 func (app *Application) GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := app.GetUserFromContext(r)
+	app.Logger.Infof("Retrieving user with ID: %d", user.ID)
 	if err != nil {
+		app.Logger.Errorf("Error retrieving user from context: %v", err)
 		app.Err.NotFoundError(w, r, err)
 		return
 	}
+	app.Logger.Infof("Retrieving user with ID: %d", user.ID)
 	utils.WriteJson(w, http.StatusOK, user)
 }
 
@@ -58,22 +61,28 @@ func (app *Application) GetUserByIDHandler(w http.ResponseWriter, r *http.Reques
 // @Router /v1/user/{userId}/follow [put]
 func (app *Application) FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	followerUser, err := app.GetUserFromContext(r)
+	app.Logger.Infof("Follower user ID: %d", followerUser.ID)
 	if err != nil {
+		app.Logger.Errorf("Error retrieving follower user from context: %v", err)
 		app.Err.NotFoundError(w, r, err)
 		return
 	}
 	var followUser FollowUser
 	if err := utils.ReadJson(w, r, &followUser); err != nil {
+		app.Logger.Errorf("Error reading follow user payload: %v", err)
 		app.Err.BadRequestError(w, r, err)
 		return
 	}
 	followerUserId := followerUser.ID
+	app.Logger.Infof("Follower user ID: %d, Follow user ID: %d", followerUserId, followUser.UserId)
 
 	err = app.Store.Follower.Follow(r.Context(), followUser.UserId, followerUserId)
 	if err != nil {
+		app.Logger.Errorf("Error following user: %v", err)
 		app.Err.InternalServerError(w, r, err)
 		return
 	}
+	app.Logger.Infof("User with ID %d followed successfully", followUser.UserId)
 
 	utils.WriteJson(w, http.StatusOK, map[string]string{"message": "Followed successfully"})
 }

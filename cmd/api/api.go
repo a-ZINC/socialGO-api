@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"social-api/cmd/middlewares"
 	"social-api/cmd/utils"
@@ -12,6 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"go.uber.org/zap"
 )
 
 type Application struct {
@@ -19,6 +19,7 @@ type Application struct {
 	Store      *store.Store
 	Err        *utils.ErrorHandler
 	Middleware *middlewares.Middleware
+	Logger     *zap.SugaredLogger
 }
 
 type Config struct {
@@ -90,6 +91,6 @@ func (app *Application) run(mux http.Handler) error {
 		IdleTimeout:  time.Second,
 	}
 
-	log.Printf("Starting server on %s", app.Config.Addr)
+	app.Logger.Infof("Starting server on %s", app.Config.Addr)
 	return server.ListenAndServe()
 }

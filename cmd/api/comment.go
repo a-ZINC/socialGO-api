@@ -30,21 +30,26 @@ type CommentPayload struct {
 func (app *Application) CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	postIdParams := chi.URLParam(r, "postId")
 	postId, err := strconv.ParseInt(postIdParams, 10, 64)
+	app.Logger.Infof("Creating comment for post ID: %d", postId)
 	if err != nil {
+		app.Logger.Errorf("Failed to parse post ID: %v", err)
 		app.Err.BadRequestError(w, r, err)
 		return
 	}
 	payload := &CommentPayload{}
 	if err := utils.ReadJson(w, r, payload); err != nil {
+		app.Logger.Errorf("Error reading comment payload: %v", err)
 		app.Err.BadRequestError(w, r, err)
 		return
 	}
 
 	err = utils.Validator.Struct(payload)
 	if err != nil {
+		app.Logger.Errorf("Validation error: %v", err)
 		app.Err.BadRequestError(w, r, err)
 		return
 	}
+	app.Logger.Infof("Creating comment with content: %s", payload.Content)
 
 	ctx := r.Context()
 	err = app.Store.Comments.Create(ctx, &model.Comment{
@@ -54,8 +59,10 @@ func (app *Application) CreateCommentHandler(w http.ResponseWriter, r *http.Requ
 	})
 
 	if err != nil {
+		app.Logger.Errorf("Error creating comment: %v", err)
 		app.Err.InternalServerError(w, r, err)
 		return
 	}
+	app.Logger.Infof("Comment created successfully for post ID: %d %v", postId, payload)
 	utils.JsonResponse(w, http.StatusCreated, payload)
 }

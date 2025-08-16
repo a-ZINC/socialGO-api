@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"social-api/cmd/middlewares"
 	"social-api/cmd/utils"
 	_ "social-api/docs"
@@ -10,6 +9,7 @@ import (
 	"social-api/internal/store"
 
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 //	@title			Social Media API
@@ -49,8 +49,11 @@ func main() {
 		Err: errorConfig,
 	}
 
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
 	sql := db.New(cfg.Db.Addr, cfg.Db.MaxOpenConns, cfg.Db.MaxIdleConns, cfg.Db.ConnMaxLifetime, cfg.Db.ConnMaxIdleTime)
-	log.Printf("Connected to database at %s", cfg.Db.Addr)
+	logger.Infof("Connected to database at %s", cfg.Db.Addr)
 
 	store := store.NewStorage(sql)
 
@@ -59,6 +62,7 @@ func main() {
 		Store:      store,
 		Err:        errorConfig,
 		Middleware: middlewareCfg,
+		Logger:     logger,
 	}
 	mux := app.mount()
 
