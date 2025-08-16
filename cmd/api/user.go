@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"log"
 	"net/http"
@@ -151,4 +153,39 @@ func (app *Application) GetUserFromContext(r *http.Request) (model.User, error) 
 		return model.User{}, errors.New("user not found in context")
 	}
 	return user, nil
+}
+
+// Activate User
+// @Summary Activate a user
+// @Description Activate a user by their token
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param token path string true "Activation token"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Security ApiKeyAuth
+// @Router /v1/user/activate/{token} [put]
+func (app *Application) ActivateUserHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	log.Println("Activating user")
+	token := chi.URLParam(r, "token")
+	log.Printf("Activating user with token: %s", token)
+	hash := sha256.Sum256([]byte(token))
+	hashedToken := hex.EncodeToString(hash[:])
+	log.Printf("Activating user with token: %s", hashedToken)
+	err := app.Store.Users.ActivateUser(ctx, hashedToken)
+	if err != nil {
+		switch err {
+		case store.ErrPostNotFound:
+			app.Err.NotFoundError(w, r, err)
+		default:
+			app.Err.InternalServerError(w, r, err)
+		}
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, map[string]string{"message": "User activated successfully"})
 }

@@ -440,6 +440,40 @@ paths:
       summary: Unfollow a user
       tags:
       - Users
+  /v1/user/activate/{token}:
+    put:
+      consumes:
+      - application/json
+      description: Activate a user by their token
+      parameters:
+      - description: Activation token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Activate a user
+      tags:
+      - Users
   /v1/user/feed:
     get:
       consumes:

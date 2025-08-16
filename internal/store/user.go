@@ -25,7 +25,7 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *model.User) er
 	ctx, cancel := context.WithTimeout(ctx, TimeOut)
 	defer cancel()
 
-	err := tx.QueryRowContext(ctx, query, user.Name, user.Email, user.Password).Scan(&user.ID, &user.CreatedAt)
+	err := tx.QueryRowContext(ctx, query, user.Name, user.Email, user.Password.Hash).Scan(&user.ID, &user.CreatedAt)
 
 	if err != nil {
 		switch {
@@ -68,13 +68,75 @@ func (s *UserStore) CreateAndInvitation(ctx context.Context, user *model.User, t
 
 func (s *UserStore) CreateInvite(ctx context.Context, tx *sql.Tx, user *model.User, token string, expiryTime time.Duration) error {
 	query := `
-		INSERT INTO user_invitations (token, user_id, expiry_time)
+		INSERT INTO "User_Invitations" (token, user_id, expires_at)
 		VALUES ($1, $2, $3)
 	`
 	ctx, cancel := context.WithTimeout(ctx, TimeOut)
 	defer cancel()
 
 	_, err := tx.ExecContext(ctx, query, token, user.ID, time.Now().Add(expiryTime))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *UserStore) ActivateUser(ctx context.Context, token string) error {
+	return withTx(s.db, ctx, func(tx *sql.Tx) error {
+		user, err := s.GetUserByInvitation(ctx, tx, token)
+		if err != nil {
+			return err
+		}
+
+		query := `
+			UPDATE "User" SET is_active = TRUE WHERE id = $1
+		`
+		ctx, cancel := context.WithTimeout(ctx, TimeOut)
+		defer cancel()
+
+		_, err = tx.ExecContext(ctx, query, user.ID)
+		if err != nil {
+			return err
+		}
+
+		err = s.DeleteUserInvitations(ctx, tx, user.ID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func (s *UserStore) GetUserByInvitation (ctx context.Context, tx *sql.Tx, token string) (model.User, error) {
+	query := `
+		SELECT u.id, u.name, u.email, u.created_at
+		FROM "User" u
+		JOIN "User_Invitations" ui ON u.id = ui.user_id
+		WHERE ui.token = $1 AND ui.expires_at > NOW()
+	`
+	ctx, cancel := context.WithTimeout(ctx, TimeOut)
+	defer cancel()
+
+	var user model.User
+	err := tx.QueryRowContext(ctx, query, token).Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return model.User{}, ErrPostNotFound
+		}
+		return model.User{}, err
+	}
+	return user, nil
+}
+
+func (s *UserStore) DeleteUserInvitations(ctx context.Context, tx *sql.Tx, userID int64) error {
+	query := `
+		DELETE FROM "User_Invitations" WHERE user_id = $1
+	`
+	ctx, cancel := context.WithTimeout(ctx, TimeOut)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, userID)
 	if err != nil {
 		return err
 	}

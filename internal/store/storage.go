@@ -27,6 +27,7 @@ type UserRepo interface {
 	Create(ctx context.Context, tx *sql.Tx, user *model.User) error
 	GetByID(ctx context.Context, id int64) (model.User, error)
 	CreateAndInvitation(ctx context.Context, user *model.User, token string, expiryTime time.Duration) error
+	ActivateUser(ctx context.Context, token string) error
 }
 
 type CommentRepo interface {

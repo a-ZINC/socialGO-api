@@ -1,6 +1,9 @@
 package model
 
-import "golang.org/x/crypto/bcrypt"
+import (
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 type User struct {
 	ID        int64  `json:"id"`

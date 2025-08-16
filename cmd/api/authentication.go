@@ -16,6 +16,10 @@ type AuthenticationPayload struct {
 	Password string `json:"password" validate:"required,min=8,max=100"`
 }
 
+type TokenResponse struct {
+	Token string `json:"token"`
+}
+
 // @Summary Register a new user
 // @Description Registers a new user with the provided email and password
 // @Tags auth
@@ -69,6 +73,7 @@ func (app *Application) RegisterUserHandler(w http.ResponseWriter, r *http.Reque
 		}
 		return
 	}
-
-	app.Logger.Infof("Registering user", "email", payload.Email)
+	tokenRes := TokenResponse{Token: plainToken}
+	app.Logger.Infof("Registering user", "email", user.Email, "name", user.Name)
+	utils.WriteJson(w, http.StatusCreated, tokenRes)
 }

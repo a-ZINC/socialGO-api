@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS "User_Invitations" (
 	token bytea PRIMARY KEY,
     user_id bigint NOT NULL,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL
 );
