@@ -101,7 +101,7 @@ func generateUser(count int) []model.User {
 		users[i] = model.User{
 			Name:     name,
 			Email:    name + "@example.com",
-			Password: "hashed_password", // Replace with real hash in production
+			Password: model.Password{Text: &name, Hash: []byte("hashed_password")}, // Replace with real hash in production
 		}
 	}
 	return users
